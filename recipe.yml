@@ -1,5 +1,5 @@
-base-image: ghcr.io/ublue-os/bazzite:stable
-image-version: latest
+base-image: ghcr.io/ublue-os/bazzite
+image-version: stable
 
 name: debrid-livingroom-os
 description: SteamOS console with on-demand Real-Debrid game installing, Stremio, and Norwegian IPTV.
@@ -12,10 +12,12 @@ modules:
       - docker-compose
       - zenity
 
-  - type: flatpak
-    install:
-      - com.github.linuxmint.hypnotix
-      - com.stremio.Stremio
+  - type: default-flatpaks
+    configurations:
+      - scope: system
+        install:
+          - com.github.linuxmint.hypnotix
+          - com.stremio.Stremio
 
   - type: files
     files:
