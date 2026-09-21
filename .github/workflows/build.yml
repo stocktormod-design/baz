@@ -36,7 +36,7 @@ jobs:
 
       - name: Bygg og push image
         id: bluebuild
-        uses: blue-build/github-action@v1.10
+        uses: blue-build/github-action@v1
         with:
           recipe: recipe.yml
           cosign_private_key: ${{ secrets.SIGNING_SECRET }}
