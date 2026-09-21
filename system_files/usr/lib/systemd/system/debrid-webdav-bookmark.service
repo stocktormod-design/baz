@@ -1,0 +1,12 @@
+[Unit]
+Description=Legg til Real-Debrid WebDAV-snarvei i filbehandlerens sidepanel
+After=local-fs.target systemd-user-sessions.service
+ConditionPathExists=!/var/lib/debrid-webdav-bookmark.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/setup-debrid-bookmark.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

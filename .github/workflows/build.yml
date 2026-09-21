@@ -1,0 +1,91 @@
+name: Build and Release Debrid Livingroom OS
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "**.md"
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "00 17 * * *" # Bygg på nytt hver dag kl 17:00 UTC for å plukke opp oppdateringer
+
+env:
+  IMAGE_NAME: ${{ github.event.repository.name }}
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+  DEFAULT_TAG: latest
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Bygg OCI-image med BlueBuild
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    outputs:
+      image_full_ref: ${{ steps.bluebuild.outputs.image_full_ref }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Bygg og push image
+        id: bluebuild
+        uses: blue-build/github-action@v1.10
+        with:
+          recipe: recipe.yml
+          cosign_private_key: ${{ secrets.SIGNING_SECRET }}
+          registry_token: ${{ github.token }}
+          pr_event_number: ${{ github.event.number }}
+
+  build-iso:
+    name: Generer ISO og publiser Release
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Sett dato-tag for release
+        id: vars
+        run: echo "tag=$(date +'%Y.%m.%d')-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+
+      - name: Opprett minimal bootc-image-builder-konfig
+        run: |
+          cat > config.toml <<'EOF'
+          [[customizations.user]]
+          name = "deck"
+          groups = ["wheel"]
+          EOF
+
+      - name: Generer ISO med bootc-image-builder
+        run: |
+          mkdir -p output
+          sudo docker run \
+            --rm \
+            --privileged \
+            --pull=newer \
+            --security-opt label=type:unconfined_t \
+            -v "$(pwd)/config.toml:/config.toml:ro" \
+            -v "$(pwd)/output:/output" \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type iso \
+            --config /config.toml \
+            "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
+
+      - name: Last opp ISO til GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          name: "Debrid Livingroom OS ${{ steps.vars.outputs.tag }}"
+          files: output/bootiso/*.iso
+          generate_release_notes: true

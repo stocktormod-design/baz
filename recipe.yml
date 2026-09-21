@@ -1,0 +1,39 @@
+base-image: ghcr.io/ublue-os/bazzite:stable
+image-version: latest
+
+name: debrid-livingroom-os
+description: SteamOS console with on-demand Real-Debrid game installing, Stremio, and Norwegian IPTV.
+
+modules:
+  - type: rpm-ostree
+    install:
+      - rclone
+      - docker
+      - docker-compose
+
+  - type: flatpak
+    install:
+      - com.github.linuxmint.hypnotix
+      - com.stremio.Stremio
+
+  - type: files
+    files:
+      - source: system_files
+        destination: /
+
+  - type: systemd
+    system:
+      enabled:
+        - docker.service
+        - debrid-webdav-bookmark.service
+
+  - type: script
+    scripts:
+      - |
+        #!/usr/bin/env bash
+        mkdir -p /var/games/DebridCloud
+        mkdir -p /var/games/Downloads
+        mkdir -p /var/games/Emulation/roms/wiiu
+        mkdir -p /var/games/Emulation/roms/switch
+        mkdir -p /var/deck/IPTV
+        chmod +x /usr/bin/setup-debrid-bookmark.sh
