@@ -79,6 +79,15 @@ KNOWN_NORWEGIAN_CHANNELS = [
     r"\bnickelodeon\s?norge\b",
     r"\bdisney\s?channel\s?norge\b",
     r"\brikstoto\b",
+    # Sportskanaler som har norske rettigheter til Premier League/La Liga/
+    # Champions League m.m., selv om enkelte lister ikke merker dem med et
+    # eget Norge/Norway-tagg (de er ofte delt nordisk). Inkludert eksplisitt
+    # på brukerens ønske, siden risikoen for å miste disse er verre enn
+    # risikoen for en sjelden falsk positiv fra et annet nordisk land.
+    r"\btv\s?2\s?sport\b",
+    r"\bviaplay\s?sport\b",
+    r"\bviasat\s?sport\b",
+    r"\bnent\s?sport\b",
 ]
 KNOWN_NORWEGIAN_CHANNELS_RE = re.compile("|".join(KNOWN_NORWEGIAN_CHANNELS), re.IGNORECASE)
 
