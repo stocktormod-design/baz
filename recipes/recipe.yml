@@ -12,12 +12,18 @@ modules:
       - docker-compose
       - zenity
 
+  # Hypnotix finnes ikke som Flatpak på Flathub (bekreftet: 0 treff på Flathub-søk,
+  # og "requested but never ported" på Flathub sitt forum), og den eneste Fedora
+  # COPR-pakken (musuruan/multimedia) har en ødelagt python3-cinemagoer-avhengighet
+  # for Fedora 44. Bruker i stedet "Open TV" (dev.fredol.open-tv) - en aktivt
+  # vedlikeholdt, verifisert Flatpak-IPTV-spiller (M3U/Xtream, kategorier,
+  # favoritter, opptak, fjernkontroll-støtte) med 150k+ installasjoner.
   - type: default-flatpaks
     configurations:
       - scope: system
         install:
-          - com.github.linuxmint.hypnotix
           - com.stremio.Stremio
+          - dev.fredol.open-tv
 
   - type: files
     files:
@@ -35,7 +41,4 @@ modules:
 
   - type: script
     scripts:
-      - |
-        #!/usr/bin/env bash
-        chmod +x /usr/bin/debrid-first-boot-dirs.sh
-        chmod +x /usr/bin/debrid-first-run-setup.sh
+      - setup-permissions.sh
