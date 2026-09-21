@@ -89,16 +89,18 @@ jobs:
             -v "$(pwd)/output:/output" \
             -v /var/lib/containers/storage:/var/lib/containers/storage \
             quay.io/centos-bootc/bootc-image-builder:latest \
-            --type iso \
+            --type bootc-installer \
             --rootfs btrfs \
-            --use-librepo=True \
             --config /config.toml \
             "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
+
+          echo "=== Innhold i output/ etter bygg (for feilsøking av filsti) ==="
+          find output -maxdepth 3 -type f
 
       - name: Last opp ISO til GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.vars.outputs.tag }}
           name: "Debrid Livingroom OS ${{ steps.vars.outputs.tag }}"
-          files: output/bootiso/*.iso
+          files: output/**/*.iso
           generate_release_notes: true
