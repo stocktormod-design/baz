@@ -37,14 +37,13 @@ jobs:
       - name: Bygg og push image
         id: bluebuild
         uses: blue-build/github-action@v1
-        env:
-          # Signering er skrudd av for nå (ingen cosign-nøkkelpar satt opp ennå).
-          # Fjern denne linjen og sett SIGNING_SECRET-secreten om du vil signere imaget senere.
-          BUILD_OPTS: --no-sign
         with:
           recipe: recipe.yml
           registry_token: ${{ github.token }}
           pr_event_number: ${{ github.event.number }}
+          # Signering er skrudd av for nå (ingen cosign-nøkkelpar satt opp ennå).
+          # Fjern denne linjen og sett cosign_private_key-inputen om du vil signere imaget senere.
+          build_opts: --no-sign
 
   build-iso:
     name: Generer ISO og publiser Release
