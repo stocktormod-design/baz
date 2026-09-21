@@ -12,7 +12,9 @@ on:
     - cron: "00 17 * * *" # Bygg på nytt hver dag kl 17:00 UTC for å plukke opp oppdateringer
 
 env:
-  IMAGE_NAME: ${{ github.event.repository.name }}
+  # Må matche recipe.yml sitt "name:"-felt - blue-build/github-action tagger og
+  # pusher imaget under DETTE navnet, IKKE under GitHub-repoets navn (som er "baz").
+  IMAGE_NAME: debrid-livingroom-os
   IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
   DEFAULT_TAG: latest
 
