@@ -71,6 +71,13 @@ jobs:
       - name: Generer ISO med bootc-image-builder
         run: |
           mkdir -p output
+
+          # bootc-image-builder bruker internt podman til å inspisere imaget fra
+          # /var/lib/containers/storage, og pull'er ikke selv lenger - vi må derfor
+          # pull'e imaget inn i podman sin lokale storage FØR vi kjører det.
+          echo "${{ github.token }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
+          sudo podman pull "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
+
           sudo docker run \
             --rm \
             --privileged \
