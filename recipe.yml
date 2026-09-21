@@ -10,6 +10,7 @@ modules:
       - rclone
       - docker
       - docker-compose
+      - zenity
 
   - type: flatpak
     install:
@@ -25,15 +26,14 @@ modules:
     system:
       enabled:
         - docker.service
-        - debrid-webdav-bookmark.service
+        - debrid-first-boot-dirs.service
+    user:
+      enabled:
+        - rclone-mount-debrid.service
 
   - type: script
     scripts:
       - |
         #!/usr/bin/env bash
-        mkdir -p /var/games/DebridCloud
-        mkdir -p /var/games/Downloads
-        mkdir -p /var/games/Emulation/roms/wiiu
-        mkdir -p /var/games/Emulation/roms/switch
-        mkdir -p /var/deck/IPTV
-        chmod +x /usr/bin/setup-debrid-bookmark.sh
+        chmod +x /usr/bin/debrid-first-boot-dirs.sh
+        chmod +x /usr/bin/debrid-first-run-setup.sh

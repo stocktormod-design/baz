@@ -1,0 +1,12 @@
+[Unit]
+Description=Opprett mappestruktur for Debrid-skyen, lokale installasjoner og emulering
+After=local-fs.target systemd-user-sessions.service
+ConditionPathExists=!/var/lib/debrid-first-boot-dirs.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/debrid-first-boot-dirs.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

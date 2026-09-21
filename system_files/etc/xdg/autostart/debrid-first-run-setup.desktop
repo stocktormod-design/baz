@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Real-Debrid oppsett
+Comment=Førstegangs-veiviser for å koble Real-Debrid til Debrid Livingroom OS
+Exec=/usr/bin/debrid-first-run-setup.sh
+X-GNOME-Autostart-enabled=true
+NoDisplay=false
+Terminal=false
