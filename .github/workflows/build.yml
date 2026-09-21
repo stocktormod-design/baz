@@ -1,4 +1,4 @@
-name: Build and Release Debrid Livingroom OS
+name: Build Debrid Livingroom OS
 
 on:
   push:
@@ -47,60 +47,8 @@ jobs:
           # Fjern denne linjen og sett cosign_private_key-inputen om du vil signere imaget senere.
           build_opts: --no-sign
 
-  build-iso:
-    name: Generer ISO og publiser Release
-    needs: build
-    if: github.event_name != 'pull_request'
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
-
-      - name: Sett dato-tag for release
-        id: vars
-        run: echo "tag=$(date +'%Y.%m.%d')-${GITHUB_RUN_NUMBER}" >> "$GITHUB_OUTPUT"
-
-      - name: Opprett minimal bootc-image-builder-konfig
-        run: |
-          cat > config.toml <<'EOF'
-          [[customizations.user]]
-          name = "deck"
-          groups = ["wheel"]
-          EOF
-
-      - name: Generer ISO med bootc-image-builder
-        run: |
-          mkdir -p output
-
-          # bootc-image-builder bruker internt podman til å inspisere imaget fra
-          # /var/lib/containers/storage, og pull'er ikke selv lenger - vi må derfor
-          # pull'e imaget inn i podman sin lokale storage FØR vi kjører det.
-          echo "${{ github.token }}" | sudo podman login ghcr.io -u "${{ github.actor }}" --password-stdin
-          sudo podman pull "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
-
-          sudo docker run \
-            --rm \
-            --privileged \
-            --pull=always \
-            --security-opt label=type:unconfined_t \
-            -v "$(pwd)/config.toml:/config.toml:ro" \
-            -v "$(pwd)/output:/output" \
-            -v /var/lib/containers/storage:/var/lib/containers/storage \
-            quay.io/centos-bootc/bootc-image-builder:latest \
-            --type iso \
-            --rootfs btrfs \
-            --config /config.toml \
-            "${{ env.IMAGE_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEFAULT_TAG }}"
-
-          echo "=== Innhold i output/ etter bygg (for feilsøking av filsti) ==="
-          find output -maxdepth 3 -type f
-
-      - name: Last opp ISO til GitHub Releases
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.vars.outputs.tag }}
-          name: "Debrid Livingroom OS ${{ steps.vars.outputs.tag }}"
-          files: output/**/*.iso
-          generate_release_notes: true
+# ISO-en bygges IKKE lenger i CI: Bazzite-baserte images er for store (15-20+ GB)
+# til å publiseres som GitHub Release-filer (2 GB maks-grense per fil). Siden ISO-en
+# uansett bare skal flashes lokalt til USB, bygges den i stedet på egen PC - se
+# scripts/build-iso-local.sh for en ferdig kommando som gjenbruker samme oppskrift
+# som fungerte i CI (podman pull + bootc-image-builder --type iso --rootfs btrfs).
