@@ -42,3 +42,4 @@ modules:
   - type: script
     scripts:
       - setup-permissions.sh
+      - disable-terra-mesa-repo.sh
