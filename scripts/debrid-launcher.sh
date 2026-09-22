@@ -51,7 +51,25 @@ else
         exit 1
     fi
 
-    log "Spillet '$GAME_NAME' finnes ikke lokalt. Starter nedlasting fra Real-Debrid..."
+    log "Spillet '$GAME_NAME' finnes ikke lokalt."
+
+    PIN_FILE="$HOME/.config/debrid-pin"
+    if [ -f "$PIN_FILE" ] && command -v zenity >/dev/null 2>&1; then
+        STORED_PIN="$(cat "$PIN_FILE")"
+        ENTERED_PIN="$(zenity --password --title="Real-Debrid nedlasting" \
+            --text="Skriv inn PIN-koden for å laste ned '$GAME_NAME' fra Real-Debrid:")" || {
+                log "Nedlasting avbrutt: PIN-dialog lukket/avbrutt for '$GAME_NAME'."
+                zenity --error --text="Nedlasting avbrutt." --width=300 || true
+                exit 1
+            }
+        if [ "$ENTERED_PIN" != "$STORED_PIN" ]; then
+            log "Nedlasting avbrutt: feil PIN oppgitt for '$GAME_NAME'."
+            zenity --error --text="Feil PIN-kode. Nedlasting avbrutt." --width=300 || true
+            exit 1
+        fi
+    fi
+
+    log "PIN OK (eller ikke satt). Starter nedlasting fra Real-Debrid..."
     mkdir -p "$LOCAL_GAME_DIR"
 
     # Høy ytelse: mange parallelle overføringer/sjekkere, siden dette er en

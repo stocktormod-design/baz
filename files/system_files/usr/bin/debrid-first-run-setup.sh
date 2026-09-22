@@ -70,6 +70,37 @@ if ! grep -qF "$DEBRID_MOUNT_DIR" "$BOOKMARKS_FILE" 2>/dev/null; then
     echo "file://${DEBRID_MOUNT_DIR} Real-Debrid Cloud" >> "$BOOKMARKS_FILE"
 fi
 
+PIN_FILE="$HOME/.config/debrid-pin"
+
+while true; do
+    PINS=$(zenity --forms \
+        --title="Sett PIN-kode for nedlasting" \
+        --text="Velg en 4-sifret PIN som må tastes inn før et nytt spill lastes ned fra Real-Debrid.\n\nAllerede nedlastede spill starter som vanlig uten PIN." \
+        --add-password="PIN (4 siffer)" \
+        --add-password="Gjenta PIN" \
+        --separator="|") || {
+            zenity --warning --text="Hoppet over PIN-oppsett. Nedlasting fra Real-Debrid vil ikke kreve PIN. Du kan sette dette senere ved å lage $PIN_FILE." --width=400
+            break
+        }
+
+    PIN1="$(echo "$PINS" | cut -d'|' -f1)"
+    PIN2="$(echo "$PINS" | cut -d'|' -f2)"
+
+    if [ "$PIN1" != "$PIN2" ]; then
+        zenity --warning --text="PIN-kodene var ikke like. Prøv igjen." --width=350
+        continue
+    fi
+
+    if ! [[ "$PIN1" =~ ^[0-9]{4}$ ]]; then
+        zenity --warning --text="PIN må være nøyaktig 4 siffer. Prøv igjen." --width=350
+        continue
+    fi
+
+    echo "$PIN1" > "$PIN_FILE"
+    chmod 600 "$PIN_FILE"
+    break
+done
+
 mkdir -p "$(dirname "$MARKER")"
 touch "$MARKER"
 
